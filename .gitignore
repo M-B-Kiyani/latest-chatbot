@@ -1,16 +1,31 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.js
+jspm_packages/
+
+# Build outputs
+dist/
+dist-ssr/
+build/
+*.local
+*.tsbuildinfo
+build/Release
+
 # Logs
-logs
+logs/
 *.log
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
+pnpm-debug.log*
 lerna-debug.log*
 
 # Diagnostic reports (https://nodejs.org/api/report.html)
 report.[0-9]*.[0-9]*.[0-9]*.[0-9]*.json
 
 # Runtime data
-pids
+pids/
 *.pid
 *.seed
 *.pid.lock
@@ -19,11 +34,9 @@ pids
 lib-cov
 
 # Coverage directory used by tools like istanbul
-coverage
+coverage/
 *.lcov
-
-# nyc test coverage
-.nyc_output
+.nyc_output/
 
 # Grunt intermediate storage (https://gruntjs.com/creating-plugins#storing-task-files)
 .grunt
@@ -34,18 +47,8 @@ bower_components
 # node-waf configuration
 .lock-wscript
 
-# Compiled binary addons (https://nodejs.org/api/addons.html)
-build/Release
-
-# Dependency directories
-node_modules/
-jspm_packages/
-
 # Snowpack dependency directory (https://snowpack.dev/)
 web_modules/
-
-# TypeScript cache
-*.tsbuildinfo
 
 # Optional npm cache directory
 .npm
@@ -65,10 +68,53 @@ web_modules/
 # Yarn Integrity file
 .yarn-integrity
 
-# dotenv environment variable files
+# Environment variables (NEVER commit these!)
 .env
 .env.*
+.env.local
+.env.production
+.env.staging
+.env.development
+.env.test
 !.env.example
+
+# Sensitive credentials and API keys
+google-credentials.json
+service-account-key.json
+metalogics-chatbot-*.json
+*-service-account.json
+*-credentials.json
+*.pem
+*.key
+*.cert
+*.p12
+*.pfx
+
+# API Keys and secrets
+*api-key*
+*secret*
+*token*
+*password*
+config/secrets.json
+secrets/
+credentials/
+
+# Retell AI configuration
+retell-config.json
+retell-agent-*.json
+
+# HubSpot credentials
+hubspot-*.json
+
+# OAuth tokens
+*oauth*
+*refresh-token*
+*access-token*
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
 
 # parcel-bundler cache (https://parceljs.org/)
 .cache
@@ -80,7 +126,6 @@ out
 
 # Nuxt.js build / generate output
 .nuxt
-dist
 
 # Gatsby files
 .cache/
@@ -93,7 +138,6 @@ dist
 
 # vuepress v2.x temp and cache directory
 .temp
-.cache
 
 # Sveltekit cache directory
 .svelte-kit/
@@ -125,6 +169,25 @@ dist
 # Stores VSCode versions used for testing VSCode extensions
 .vscode-test
 
+# Editor directories and files
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+.DS_Store
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.swp
+*~
+
+# OS files
+Thumbs.db
+.Spotlight-V100
+.Trashes
+
 # yarn v3
 .pnp.*
 .yarn/*
@@ -137,3 +200,22 @@ dist
 # Vite logs files
 vite.config.js.timestamp-*
 vite.config.ts.timestamp-*
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# Docker
+.dockerignore
+
+# Knowledge base (generated)
+public/knowledge-base.json
+
+# Backup files
+*.backup
+*.bak
+backups/
+
+# PM2
+.pm2/
