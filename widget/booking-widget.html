@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Booking Widget</title>
+    <style>
+      /* Widget Container */
+      .booking-widget {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        max-width: 500px;
+        margin: 0 auto;
+        background: #ffffff;
+        border-radius: 12px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+        border: 1px solid #e5e7eb;
+      }
+
+      .widget-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 24px;
+        text-align: center;
+      }
+
+      .widget-header h2 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+      }
+
+      .widget-header p {
+        margin: 8px 0 0 0;
+        opacity: 0.9;
+        font-size: 14px;
+      }
+
+      .widget-content {
+        padding: 24px;
+      }
+
+      /* Form Styles */
+      .form-group {
+        margin-bottom: 20px;
+      }
+
+      .form-label {
+        display: block;
+        margin-bottom: 6px;
+        font-weight: 500;
+        color: #374151;
+        font-size: 14px;
+      }
+
+      .form-input {
+        width: 100%;
+        padding: 12px;
+        border: 2px solid #e5e7eb;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.2s;
+        box-sizing: border-box;
+      }
+
+      .form-input:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+      }
+
+      .form-textarea {
+        min-height: 80px;
+        resize: vertical;
+      }
+
+      .form-select {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 12px center;
+        background-repeat: no-repeat;
+        background-size: 16px;
+        padding-right: 40px;
+      }
+
+      /* Date and Time Selection */
+      .datetime-section {
+        background: #f9fafb;
+        border-radius: 8px;
+        padding: 16px;
+        margin-bottom: 20px;
+      }
+
+      .datetime-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+        margin-top: 12px;
+      }
+
+      /* Available Slots */
+      .slots-container {
+        max-height: 200px;
+        overflow-y: auto;
+        border: 1px solid #e5e7eb;
+        border-radius: 8px;
+        padding: 8px;
+      }
+
+      .slot-button {
+        display: block;
+        width: 100%;
+        padding: 10px;
+        margin-bottom: 6px;
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 6px;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-size: 14px;
+      }
+
+      .slot-button:hover {
+        background: #f3f4f6;
+        border-color: #667eea;
+      }
+
+      .slot-button.selected {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+      }
+
+      .slot-button:last-child {
+        margin-bottom: 0;
+      }
+
+      /* Submit Button */
+      .submit-button {
+        width: 100%;
+        padding: 14px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: transform 0.2s;
+      }
+
+      .submit-button:hover {
+        transform: translateY(-1px);
+      }
+
+      .submit-button:disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      /* Loading and Messages */
+      .loading {
+        text-align: center;
+        padding: 20px;
+        color: #6b7280;
+      }
+
+      .error-message {
+        background: #fef2f2;
+        color: #dc2626;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        font-size: 14px;
+      }
+
+      .success-message {
+        background: #f0fdf4;
+        color: #16a34a;
+        padding: 12px;
+        border-radius: 8px;
+        margin-bottom: 16px;
+        font-size: 14px;
+      }
+
+      /* Responsive */
+      @media (max-width: 480px) {
+        .booking-widget {
+          margin: 0;
+          border-radius: 0;
+        }
+
+        .datetime-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+
+      /* Hidden class */
+      .hidden {
+        display: none;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="booking-widget">
+      <div class="widget-header">
+        <h2>Book a Consultation</h2>
+        <p>Schedule your free consultation with our experts</p>
+      </div>
+
+      <div class="widget-content">
+        <div id="error-container"></div>
+        <div id="success-container"></div>
+
+        <form id="booking-form">
+          <!-- Personal Information -->
+          <div class="form-group">
+            <label class="form-label" for="name">Full Name *</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              class="form-input"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="company">Company *</label>
+            <input
+              type="text"
+              id="company"
+              name="company"
+              class="form-input"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="email">Email Address *</label>
+            <input
+              type="email"
+              id="email"
+              name="email"
+              class="form-input"
+              required
+            />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="phone">Phone Number</label>
+            <input type="tel" id="phone" name="phone" class="form-input" />
+          </div>
+
+          <div class="form-group">
+            <label class="form-label" for="inquiry"
+              >What would you like to discuss? *</label
+            >
+            <textarea
+              id="inquiry"
+              name="inquiry"
+              class="form-input form-textarea"
+              required
+              placeholder="Tell us about your project, goals, or questions..."
+            ></textarea>
+          </div>
+
+          <!-- Date and Time Selection -->
+          <div class="datetime-section">
+            <label class="form-label">Select Date & Duration *</label>
+            <div class="datetime-grid">
+              <div class="form-group">
+                <input
+                  type="date"
+                  id="booking-date"
+                  class="form-input"
+                  required
+                />
+              </div>
+              <div class="form-group">
+                <select id="duration" class="form-input form-select" required>
+                  <option value="">Duration</option>
+                  <option value="15">15 minutes</option>
+                  <option value="30">30 minutes</option>
+                  <option value="45">45 minutes</option>
+                  <option value="60">60 minutes</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="slots-section" class="hidden">
+              <label class="form-label">Available Times</label>
+              <div id="slots-container" class="slots-container">
+                <div class="loading">Loading available times...</div>
+              </div>
+            </div>
+          </div>
+
+          <button type="submit" class="submit-button" id="submit-btn" disabled>
+            Book Consultation
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <script>
+      class BookingWidget {
+        constructor(config) {
+          this.apiBaseUrl = config.apiBaseUrl;
+          this.apiKey = config.apiKey;
+          this.selectedSlot = null;
+
+          this.initializeEventListeners();
+          this.setMinDate();
+        }
+
+        initializeEventListeners() {
+          const dateInput = document.getElementById("booking-date");
+          const durationSelect = document.getElementById("duration");
+          const form = document.getElementById("booking-form");
+
+          dateInput.addEventListener("change", () => this.handleDateChange());
+          durationSelect.addEventListener("change", () =>
+            this.handleDateChange()
+          );
+          form.addEventListener("submit", (e) => this.handleSubmit(e));
+        }
+
+        setMinDate() {
+          const today = new Date();
+          const tomorrow = new Date(today);
+          tomorrow.setDate(tomorrow.getDate() + 1);
+
+          const dateInput = document.getElementById("booking-date");
+          dateInput.min = tomorrow.toISOString().split("T")[0];
+        }
+
+        async handleDateChange() {
+          const date = document.getElementById("booking-date").value;
+          const duration = document.getElementById("duration").value;
+
+          if (!date || !duration) {
+            document.getElementById("slots-section").classList.add("hidden");
+            this.updateSubmitButton();
+            return;
+          }
+
+          await this.loadAvailableSlots(date, duration);
+        }
+
+        async loadAvailableSlots(date, duration) {
+          const slotsSection = document.getElementById("slots-section");
+          const slotsContainer = document.getElementById("slots-container");
+
+          slotsSection.classList.remove("hidden");
+          slotsContainer.innerHTML =
+            '<div class="loading">Loading available times...</div>';
+
+          try {
+            const startDate = new Date(date);
+            const endDate = new Date(date);
+            endDate.setDate(endDate.getDate() + 1);
+
+            const response = await fetch(
+              `${this.apiBaseUrl}/api/bookings/available-slots?` +
+                `startDate=${startDate.toISOString()}&` +
+                `endDate=${endDate.toISOString()}&` +
+                `duration=${duration}`
+            );
+
+            if (!response.ok) {
+              throw new Error("Failed to load available slots");
+            }
+
+            const data = await response.json();
+            this.renderSlots(data.data.slots);
+          } catch (error) {
+            console.error("Error loading slots:", error);
+            slotsContainer.innerHTML =
+              '<div class="error-message">Failed to load available times. Please try again.</div>';
+          }
+        }
+
+        renderSlots(slots) {
+          const slotsContainer = document.getElementById("slots-container");
+
+          if (slots.length === 0) {
+            slotsContainer.innerHTML =
+              '<div class="loading">No available times for this date. Please select another date.</div>';
+            return;
+          }
+
+          slotsContainer.innerHTML = "";
+
+          slots.forEach((slot) => {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = "slot-button";
+
+            const startTime = new Date(slot.startTime);
+            const endTime = new Date(slot.endTime);
+
+            button.textContent = `${this.formatTime(
+              startTime
+            )} - ${this.formatTime(endTime)}`;
+            button.dataset.slot = JSON.stringify(slot);
+
+            button.addEventListener("click", () =>
+              this.selectSlot(button, slot)
+            );
+
+            slotsContainer.appendChild(button);
+          });
+        }
+
+        selectSlot(button, slot) {
+          // Remove previous selection
+          document.querySelectorAll(".slot-button").forEach((btn) => {
+            btn.classList.remove("selected");
+          });
+
+          // Select current slot
+          button.classList.add("selected");
+          this.selectedSlot = slot;
+          this.updateSubmitButton();
+        }
+
+        updateSubmitButton() {
+          const submitBtn = document.getElementById("submit-btn");
+          const form = document.getElementById("booking-form");
+          const isFormValid = form.checkValidity() && this.selectedSlot;
+
+          submitBtn.disabled = !isFormValid;
+        }
+
+        async handleSubmit(e) {
+          e.preventDefault();
+
+          if (!this.selectedSlot) {
+            this.showError("Please select a time slot");
+            return;
+          }
+
+          const formData = new FormData(e.target);
+          const bookingData = {
+            name: formData.get("name"),
+            company: formData.get("company"),
+            email: formData.get("email"),
+            phone: formData.get("phone") || undefined,
+            inquiry: formData.get("inquiry"),
+            timeSlot: {
+              startTime: this.selectedSlot.startTime,
+              duration: this.selectedSlot.duration,
+            },
+          };
+
+          await this.submitBooking(bookingData);
+        }
+
+        async submitBooking(bookingData) {
+          const submitBtn = document.getElementById("submit-btn");
+          const originalText = submitBtn.textContent;
+
+          submitBtn.disabled = true;
+          submitBtn.textContent = "Booking...";
+
+          try {
+            const response = await fetch(`${this.apiBaseUrl}/api/bookings`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                "X-API-Key": this.apiKey,
+              },
+              body: JSON.stringify(bookingData),
+            });
+
+            const result = await response.json();
+
+            if (!response.ok) {
+              throw new Error(
+                result.error?.message || "Failed to create booking"
+              );
+            }
+
+            this.showSuccess(
+              "Booking confirmed! You will receive a confirmation email shortly."
+            );
+            this.resetForm();
+          } catch (error) {
+            console.error("Booking error:", error);
+            this.showError(
+              error.message || "Failed to create booking. Please try again."
+            );
+          } finally {
+            submitBtn.disabled = false;
+            submitBtn.textContent = originalText;
+          }
+        }
+
+        showError(message) {
+          const container = document.getElementById("error-container");
+          container.innerHTML = `<div class="error-message">${message}</div>`;
+          container.scrollIntoView({ behavior: "smooth" });
+        }
+
+        showSuccess(message) {
+          const container = document.getElementById("success-container");
+          container.innerHTML = `<div class="success-message">${message}</div>`;
+          container.scrollIntoView({ behavior: "smooth" });
+        }
+
+        resetForm() {
+          document.getElementById("booking-form").reset();
+          document.getElementById("slots-section").classList.add("hidden");
+          this.selectedSlot = null;
+          this.updateSubmitButton();
+          this.setMinDate();
+
+          // Clear messages after delay
+          setTimeout(() => {
+            document.getElementById("error-container").innerHTML = "";
+            document.getElementById("success-container").innerHTML = "";
+          }, 5000);
+        }
+
+        formatTime(date) {
+          return date.toLocaleTimeString("en-US", {
+            hour: "numeric",
+            minute: "2-digit",
+            hour12: true,
+          });
+        }
+      }
+
+      // Initialize widget when DOM is loaded
+      document.addEventListener("DOMContentLoaded", function () {
+        // Configuration - Update these values for your setup
+        const widget = new BookingWidget({
+          apiBaseUrl: "https://latest-chatbot-production.up.railway.app",
+          apiKey:
+            "c608cf9ace6a39a48451f2fc67a15e08c00a1f2c287d21ed38ea4c0652fa500d",
+        });
+
+        // Add form validation listeners
+        const form = document.getElementById("booking-form");
+        const inputs = form.querySelectorAll(
+          "input[required], textarea[required], select[required]"
+        );
+
+        inputs.forEach((input) => {
+          input.addEventListener("input", () => {
+            widget.updateSubmitButton();
+          });
+        });
+      });
+    </script>
+  </body>
+</html>

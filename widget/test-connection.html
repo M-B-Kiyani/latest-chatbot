@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Booking Widget - Connection Test</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+      }
+      .test-container {
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+      }
+      .status {
+        padding: 10px;
+        border-radius: 4px;
+        margin: 10px 0;
+      }
+      .status.success {
+        background: #d4edda;
+        color: #155724;
+      }
+      .status.error {
+        background: #f8d7da;
+        color: #721c24;
+      }
+      .status.warning {
+        background: #fff3cd;
+        color: #856404;
+      }
+      .status.loading {
+        background: #d1ecf1;
+        color: #0c5460;
+      }
+      button {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 4px;
+        cursor: pointer;
+        margin: 5px;
+      }
+      button:hover {
+        background: #5a6fd8;
+      }
+      button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+      .config-info {
+        background: #e7f3ff;
+        padding: 15px;
+        border-radius: 4px;
+        margin: 10px 0;
+      }
+      .config-info code {
+        background: #f1f1f1;
+        padding: 2px 4px;
+        border-radius: 2px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="test-container">
+      <h1>🔗 Backend Connection Test</h1>
+      <div class="config-info">
+        <strong>Current Configuration:</strong><br />
+        Backend URL:
+        <code>https://latest-chatbot-production.up.railway.app</code><br />
+        API Key: <code>c608cf...fa500d</code> (truncated for security)
+      </div>
+
+      <button onclick="testConnection()">Test API Connection</button>
+      <button onclick="testAvailableSlots()">Test Available Slots</button>
+      <button onclick="clearResults()">Clear Results</button>
+
+      <div id="test-results"></div>
+    </div>
+
+    <div class="test-container">
+      <h2>📋 Setup Checklist</h2>
+      <div id="setup-checklist">
+        <p>✅ Frontend configuration updated</p>
+        <p>✅ Widget files configured with new Railway URL</p>
+        <p>⏳ Testing backend connection...</p>
+        <p>⏳ Testing database connection...</p>
+      </div>
+    </div>
+
+    <div class="test-container">
+      <h2>📅 Booking Widget</h2>
+      <p>If the connection tests pass, the booking widget should work below:</p>
+      <div id="booking-widget-container"></div>
+    </div>
+
+    <script src="booking-widget-embed.js"></script>
+    <script>
+      const API_BASE_URL = "https://latest-chatbot-production.up.railway.app";
+      const API_KEY =
+        "c608cf9ace6a39a48451f2fc67a15e08c00a1f2c287d21ed38ea4c0652fa500d";
+
+      function showResult(message, type = "loading") {
+        const results = document.getElementById("test-results");
+        results.innerHTML += `<div class="status ${type}">${message}</div>`;
+      }
+
+      function clearResults() {
+        document.getElementById("test-results").innerHTML = "";
+      }
+
+      async function testConnection() {
+        showResult("🔄 Testing API server connection...", "loading");
+
+        try {
+          // Test if the server is responding at all
+          const response = await fetch(
+            `${API_BASE_URL}/api/bookings/available-slots?startDate=2024-12-20T00:00:00Z&endDate=2024-12-21T00:00:00Z&duration=30`,
+            {
+              method: "GET",
+              headers: {
+                Accept: "application/json",
+                "X-API-Key": API_KEY,
+              },
+            }
+          );
+
+          if (response.status === 200) {
+            showResult(
+              `✅ API Connection successful! Server is running and responding`,
+              "success"
+            );
+            return true;
+          } else if (response.status === 503) {
+            showResult(
+              `⚠️ Server is running but database connection failed. You need to configure your DATABASE_URL in Railway environment variables.`,
+              "warning"
+            );
+            return false;
+          } else if (response.status === 401 || response.status === 403) {
+            showResult(
+              `❌ Authentication failed (${response.status}). Check your API key configuration.`,
+              "error"
+            );
+            return false;
+          } else {
+            showResult(
+              `⚠️ Server responded with status: ${response.status}. Check your Railway deployment logs.`,
+              "warning"
+            );
+            return false;
+          }
+        } catch (error) {
+          showResult(
+            `❌ Connection failed: ${error.message}. Make sure your Railway app is deployed and running.`,
+            "error"
+          );
+          return false;
+        }
+      }
+
+      async function testAvailableSlots() {
+        showResult("🔄 Testing available slots endpoint...", "loading");
+
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        const dayAfter = new Date(tomorrow);
+        dayAfter.setDate(dayAfter.getDate() + 1);
+
+        try {
+          const response = await fetch(
+            `${API_BASE_URL}/api/bookings/available-slots?` +
+              `startDate=${tomorrow.toISOString()}&` +
+              `endDate=${dayAfter.toISOString()}&` +
+              `duration=30`,
+            {
+              method: "GET",
+              headers: {
+                Accept: "application/json",
+                "X-API-Key": API_KEY,
+              },
+            }
+          );
+
+          if (response.ok) {
+            const data = await response.json();
+            const slotsCount = data.data?.slots?.length || 0;
+            showResult(
+              `✅ Available slots endpoint working! Found ${slotsCount} slots for tomorrow`,
+              "success"
+            );
+          } else {
+            const errorData = await response.json().catch(() => ({}));
+            if (response.status === 503) {
+              showResult(
+                `❌ Database connection issue. Configure DATABASE_URL in Railway.`,
+                "error"
+              );
+            } else {
+              showResult(
+                `❌ Slots endpoint failed: ${response.status} - ${
+                  errorData.error?.message || response.statusText
+                }`,
+                "error"
+              );
+            }
+          }
+        } catch (error) {
+          showResult(`❌ Slots test failed: ${error.message}`, "error");
+        }
+      }
+
+      // Initialize the booking widget
+      document.addEventListener("DOMContentLoaded", function () {
+        new BookingWidget({
+          apiKey: API_KEY,
+          apiBaseUrl: API_BASE_URL,
+          containerId: "booking-widget-container",
+        });
+      });
+
+      // Auto-run connection test on page load
+      window.addEventListener("load", function () {
+        setTimeout(testConnection, 1000);
+      });
+    </script>
+  </body>
+</html>
