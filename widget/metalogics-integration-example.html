@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Metalogics Chat Widget - Integration Example</title>
+    <style>
+      /* Demo page styles */
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        margin: 0;
+        padding: 0;
+        background: linear-gradient(
+          135deg,
+          #1e40af 0%,
+          #3b82f6 50%,
+          #06b6d4 100%
+        );
+        min-height: 100vh;
+        color: white;
+      }
+
+      .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 40px 20px;
+      }
+
+      .header {
+        text-align: center;
+        margin-bottom: 60px;
+      }
+
+      .header h1 {
+        font-size: 48px;
+        margin: 0 0 16px 0;
+        font-weight: 700;
+      }
+
+      .header p {
+        font-size: 20px;
+        opacity: 0.9;
+        margin: 0;
+      }
+
+      .content {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 40px;
+        margin-bottom: 60px;
+      }
+
+      .card {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(10px);
+        border-radius: 16px;
+        padding: 32px;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+      }
+
+      .card h3 {
+        font-size: 24px;
+        margin: 0 0 16px 0;
+        color: #ffffff;
+      }
+
+      .card p {
+        font-size: 16px;
+        line-height: 1.6;
+        opacity: 0.9;
+        margin: 0 0 20px 0;
+      }
+
+      .card ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+      }
+
+      .card li {
+        padding: 8px 0;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .card li:last-child {
+        border-bottom: none;
+      }
+
+      .card li::before {
+        content: "✓";
+        color: #10b981;
+        font-weight: bold;
+        margin-right: 12px;
+      }
+
+      .demo-buttons {
+        text-align: center;
+        margin: 40px 0;
+      }
+
+      .demo-button {
+        background: rgba(255, 255, 255, 0.2);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        color: white;
+        padding: 12px 24px;
+        margin: 8px;
+        border-radius: 8px;
+        cursor: pointer;
+        font-size: 14px;
+        transition: all 0.3s;
+        backdrop-filter: blur(10px);
+      }
+
+      .demo-button:hover {
+        background: rgba(255, 255, 255, 0.3);
+        border-color: rgba(255, 255, 255, 0.5);
+        transform: translateY(-2px);
+      }
+
+      .integration-code {
+        background: rgba(0, 0, 0, 0.3);
+        border-radius: 12px;
+        padding: 24px;
+        margin: 40px 0;
+        font-family: "Monaco", "Menlo", "Ubuntu Mono", monospace;
+        font-size: 14px;
+        line-height: 1.5;
+        overflow-x: auto;
+      }
+
+      .integration-code pre {
+        margin: 0;
+        white-space: pre-wrap;
+      }
+
+      .code-title {
+        color: #06b6d4;
+        font-weight: bold;
+        margin-bottom: 12px;
+        display: block;
+      }
+
+      .footer {
+        text-align: center;
+        padding: 40px 0;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+        margin-top: 60px;
+      }
+
+      .footer p {
+        opacity: 0.7;
+        margin: 0;
+      }
+
+      @media (max-width: 768px) {
+        .header h1 {
+          font-size: 36px;
+        }
+
+        .header p {
+          font-size: 18px;
+        }
+
+        .container {
+          padding: 20px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🤖 Metalogics AI Assistant</h1>
+        <p>Experience our intelligent chatbot with Metalogics branding</p>
+      </div>
+
+      <div class="content">
+        <div class="card">
+          <h3>🎨 Brand-Matched Design</h3>
+          <p>
+            The chat widget uses Metalogics' official brand colors and design
+            language for a seamless integration.
+          </p>
+          <ul>
+            <li>Deep blue primary color (#1e40af)</li>
+            <li>Gradient backgrounds</li>
+            <li>Modern, clean interface</li>
+            <li>Responsive design</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>🚀 Smart Features</h3>
+          <p>
+            Powered by AI with intelligent conversation handling and booking
+            capabilities.
+          </p>
+          <ul>
+            <li>Natural language processing</li>
+            <li>Appointment booking & management</li>
+            <li>Service information</li>
+            <li>Real-time availability checking</li>
+          </ul>
+        </div>
+
+        <div class="card">
+          <h3>⚡ Easy Integration</h3>
+          <p>
+            Simple to integrate into any website with just a few lines of code.
+          </p>
+          <ul>
+            <li>No dependencies required</li>
+            <li>Customizable positioning</li>
+            <li>Mobile-friendly</li>
+            <li>Cross-browser compatible</li>
+          </ul>
+        </div>
+      </div>
+
+      <div class="demo-buttons">
+        <button type="button" class="demo-button" onclick="openChat()">
+          Open Chat
+        </button>
+        <button type="button" class="demo-button" onclick="closeChat()">
+          Close Chat
+        </button>
+        <button type="button" class="demo-button" onclick="sendTestMessage()">
+          Send Test Message
+        </button>
+        <button type="button" class="demo-button" onclick="clearChat()">
+          Clear History
+        </button>
+      </div>
+
+      <div class="integration-code">
+        <span class="code-title"
+          >Integration Code for bilal.metalogics.io:</span
+        >
+        <pre><code>&lt;!-- Add before closing &lt;/body&gt; tag --&gt;
+&lt;script src="metalogics-chat-config.js"&gt;&lt;/script&gt;
+&lt;script src="metalogics-chatbot-widget.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+document.addEventListener("DOMContentLoaded", function() {
+    // Initialize Metalogics Chat Widget
+    window.metalogicsChat = new MetalogicsChatWidget(window.MetalogicsChatConfig);
+});
+&lt;/script&gt;</code></pre>
+      </div>
+
+      <div class="integration-code">
+        <span class="code-title">Alternative: Inline Configuration</span>
+        <pre><code>&lt;script src="metalogics-chatbot-widget.js"&gt;&lt;/script&gt;
+&lt;script&gt;
+document.addEventListener("DOMContentLoaded", function() {
+    window.metalogicsChat = new MetalogicsChatWidget({
+        apiKey: "your-api-key-here",
+        apiBaseUrl: "https://latest-chatbot-production.up.railway.app",
+        position: "bottom-right",
+        title: "Metalogics AI Assistant",
+        minimized: true
+    });
+});
+&lt;/script&gt;</code></pre>
+      </div>
+
+      <div class="integration-code">
+        <span class="code-title">Hostinger File Upload Steps:</span>
+        <pre><code>1. Login to Hostinger Control Panel
+2. Go to File Manager
+3. Navigate to public_html folder
+4. Upload these files:
+   - metalogics-chatbot-widget.js
+   - metalogics-chat-config.js
+5. Add the integration code to your HTML pages
+6. Test the widget functionality</code></pre>
+      </div>
+
+      <div class="footer">
+        <p>© 2024 Metalogics.io - AI-Powered Solutions</p>
+      </div>
+    </div>
+
+    <!-- Load the Metalogics Chat Widget -->
+    <script src="metalogics-chat-config.js"></script>
+    <script src="metalogics-chatbot-widget.js"></script>
+
+    <script>
+      // Initialize the chat widget
+      let metalogicsChat;
+
+      document.addEventListener("DOMContentLoaded", function () {
+        metalogicsChat = new MetalogicsChatWidget(window.MetalogicsChatConfig);
+      });
+
+      // Demo functions
+      function openChat() {
+        if (metalogicsChat) {
+          metalogicsChat.open();
+        }
+      }
+
+      function closeChat() {
+        if (metalogicsChat) {
+          metalogicsChat.close();
+        }
+      }
+
+      function sendTestMessage() {
+        if (metalogicsChat) {
+          metalogicsChat.sendCustomMessage("What services do you offer?");
+          metalogicsChat.open();
+        }
+      }
+
+      function clearChat() {
+        if (metalogicsChat) {
+          metalogicsChat.clearHistory();
+        }
+      }
+
+      // Auto-open chat after 5 seconds for demo
+      setTimeout(() => {
+        if (metalogicsChat && window.MetalogicsChatConfig.autoOpen !== false) {
+          // Uncomment to auto-open for demo
+          // metalogicsChat.open();
+        }
+      }, 5000);
+    </script>
+  </body>
+</html>
