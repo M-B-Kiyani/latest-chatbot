@@ -10,8 +10,7 @@ COPY package*.json ./
 # Copy prisma schema first (before npm install to leverage Docker cache)
 COPY prisma ./prisma/
 
-# Copy service account key file
-COPY metalogics-chatbot-0cbe5759fdfc.json ./
+# Note: Service account key should be provided via environment variables in production
 
 # Install all dependencies (including dev dependencies for build)
 RUN npm ci

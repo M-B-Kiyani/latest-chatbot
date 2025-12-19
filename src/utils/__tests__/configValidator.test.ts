@@ -90,15 +90,16 @@ describe("Configuration Validator", () => {
       config.googleCalendar.enabled = false;
     });
 
-    it("should fail when service account key path is missing", () => {
+    it("should fail when both service account key and key path are missing", () => {
       config.googleCalendar.enabled = true;
       config.googleCalendar.serviceAccountEmail = "test@example.com";
       config.googleCalendar.serviceAccountKeyPath = "";
+      config.googleCalendar.serviceAccountKey = "";
 
       const result = validateGoogleCalendarConfig();
       expect(result.valid).toBe(false);
       expect(result.errors).toContain(
-        "GOOGLE_SERVICE_ACCOUNT_KEY_PATH is required when Google Calendar is enabled"
+        "Either GOOGLE_SERVICE_ACCOUNT_KEY or GOOGLE_SERVICE_ACCOUNT_KEY_PATH is required when Google Calendar is enabled"
       );
 
       config.googleCalendar.enabled = false;
@@ -181,6 +182,42 @@ describe("Configuration Validator", () => {
 
       config.googleCalendar.enabled = false;
     });
+
+    it("should pass with valid service account key content", () => {
+      config.googleCalendar.enabled = true;
+      config.googleCalendar.serviceAccountEmail = "test@example.com";
+      config.googleCalendar.serviceAccountKeyPath = "";
+      config.googleCalendar.serviceAccountKey = JSON.stringify({
+        type: "service_account",
+        project_id: "test-project",
+        private_key_id: "key-id",
+        private_key:
+          "-----BEGIN PRIVATE KEY-----\ntest\n-----END PRIVATE KEY-----",
+        client_email: "test@example.com",
+        client_id: "123456",
+      });
+
+      const result = validateGoogleCalendarConfig();
+      expect(result.valid).toBe(true);
+      expect(result.errors).toHaveLength(0);
+
+      config.googleCalendar.enabled = false;
+    });
+
+    it("should fail with invalid service account key content JSON", () => {
+      config.googleCalendar.enabled = true;
+      config.googleCalendar.serviceAccountEmail = "test@example.com";
+      config.googleCalendar.serviceAccountKeyPath = "";
+      config.googleCalendar.serviceAccountKey = "invalid json";
+
+      const result = validateGoogleCalendarConfig();
+      expect(result.valid).toBe(false);
+      expect(result.errors).toContain(
+        "GOOGLE_SERVICE_ACCOUNT_KEY is not valid JSON"
+      );
+
+      config.googleCalendar.enabled = false;
+    });
   });
 
   describe("validateHubSpotConfig", () => {
@@ -233,8 +270,7 @@ describe("Configuration Validator", () => {
 
     it("should pass with valid HubSpot configuration", () => {
       config.hubspot.enabled = true;
-      config.hubspot.accessToken =
-        "your_hubspot_access_token_here";
+      config.hubspot.accessToken = "your_hubspot_access_token_here";
 
       const result = validateHubSpotConfig();
       expect(result.valid).toBe(true);
