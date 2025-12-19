@@ -93,7 +93,6 @@ async function testAvailableSlots() {
       method: "GET",
       headers: {
         Accept: "application/json",
-        "X-API-Key": API_KEY,
         "User-Agent": "Widget-Test/1.0",
       },
     };
@@ -166,7 +165,7 @@ async function testCORS() {
       headers: {
         Origin: "http://localhost:8080",
         "Access-Control-Request-Method": "GET",
-        "Access-Control-Request-Headers": "X-API-Key,Content-Type",
+        "Access-Control-Request-Headers": "Authorization,Content-Type",
       },
     };
 

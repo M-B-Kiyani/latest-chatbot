@@ -54,7 +54,7 @@ Then open: http://localhost:8080/test-connection.html
 **Solution**:
 
 - Verify API_KEY in .env matches widget-config.js
-- Check API_KEY_HEADER setting (should be "Authorization" or "X-API-Key")
+- Check API_KEY_HEADER setting (should be "Authorization")
 
 ### 4. "Service unavailable (503)"
 
@@ -74,7 +74,7 @@ ALLOWED_ORIGINS=https://bilal.metalogics.io,http://localhost:8080,http://localho
 
 # Required for API
 API_KEY=c608cf9ace6a39a48451f2fc67a15e08c00a1f2c287d21ed38ea4c0652fa500d
-API_KEY_HEADER=X-API-Key
+API_KEY_HEADER=Authorization
 
 # Required for database
 DATABASE_URL=postgresql://...

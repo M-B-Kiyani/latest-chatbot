@@ -98,7 +98,7 @@ Query Parameters:
 POST /api/bookings
 Headers:
 - Content-Type: application/json
-- X-API-Key: your-api-key
+- Authorization: Bearer your-api-key
 
 Body:
 {

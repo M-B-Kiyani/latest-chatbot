@@ -477,7 +477,7 @@
           method: "POST",
           headers: {
             "Content-Type": "application/json",
-            "X-API-Key": this.config.apiKey,
+            Authorization: `Bearer ${this.config.apiKey}`,
           },
           body: JSON.stringify(bookingData),
         });
