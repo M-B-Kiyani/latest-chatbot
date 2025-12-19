@@ -526,6 +526,8 @@ Would you like to book a consultation to discuss your specific needs, or do you 
     bookingData: NonNullable<ConversationContext["bookingData"]>,
     message: string
   ): void {
+    const lowerMessage = message.toLowerCase();
+
     // Extract email
     const emailMatch = message.match(/[\w.-]+@[\w.-]+\.\w+/);
     if (emailMatch) {
@@ -540,17 +542,44 @@ Would you like to book a consultation to discuss your specific needs, or do you 
       bookingData.phone = phoneMatch[0];
     }
 
-    // Extract name (simple heuristic)
-    if (
-      message.toLowerCase().includes("my name is") ||
-      message.toLowerCase().includes("i'm") ||
-      message.toLowerCase().includes("i am")
-    ) {
-      const nameMatch = message.match(
-        /(?:my name is|i'm|i am)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i
-      );
-      if (nameMatch) {
-        bookingData.name = nameMatch[1];
+    // Extract name - improved logic
+    if (!bookingData.name) {
+      // First try explicit name patterns
+      if (
+        lowerMessage.includes("my name is") ||
+        lowerMessage.includes("i'm") ||
+        lowerMessage.includes("i am")
+      ) {
+        const nameMatch = message.match(
+          /(?:my name is|i'm|i am)\s+([A-Z][a-z]+(?:\s+[A-Z][a-z]+)*)/i
+        );
+        if (nameMatch) {
+          bookingData.name = nameMatch[1];
+        }
+      } else {
+        // If no email or phone in message, and it looks like a name, extract it
+        if (
+          !emailMatch &&
+          !phoneMatch &&
+          !this.extractDate(message) &&
+          !lowerMessage.match(/(\d{1,2}):?(\d{2})?\s*(am|pm)/)
+        ) {
+          // Simple name pattern: 2-4 words starting with capital letters
+          const nameMatch = message.match(
+            /^([A-Z][a-z]+(?:\s+[A-Z][a-z]+){0,3})$/
+          );
+          if (nameMatch) {
+            bookingData.name = nameMatch[1];
+          }
+        }
+      }
+    }
+
+    // Extract company name
+    if (lowerMessage.includes("from") && !bookingData.company) {
+      const companyMatch = message.match(/from\s+([A-Z][a-zA-Z\s&.,]+)/i);
+      if (companyMatch) {
+        bookingData.company = companyMatch[1].trim();
       }
     }
 
@@ -560,7 +589,7 @@ Would you like to book a consultation to discuss your specific needs, or do you 
       bookingData.date = date;
     }
 
-    // Extract time
+    // Extract time - improved parsing
     const timeMatch = message.match(/(\d{1,2}):?(\d{2})?\s*(am|pm|AM|PM)?/);
     if (timeMatch) {
       let hour = parseInt(timeMatch[1]);
@@ -571,6 +600,17 @@ Would you like to book a consultation to discuss your specific needs, or do you 
       if (meridiem === "am" && hour === 12) hour = 0;
 
       bookingData.time = `${hour.toString().padStart(2, "0")}:${minute}`;
+    }
+
+    // Extract duration
+    if (lowerMessage.includes("minute")) {
+      const durationMatch = message.match(/(\d+)\s*minute/i);
+      if (durationMatch) {
+        const duration = parseInt(durationMatch[1]);
+        if ([15, 30, 45, 60].includes(duration)) {
+          bookingData.duration = duration;
+        }
+      }
     }
   }
 
@@ -591,12 +631,85 @@ Would you like to book a consultation to discuss your specific needs, or do you 
       return tomorrow.toISOString().split("T")[0];
     }
 
+    // Check for "next [day]" pattern
+    if (lowerMessage.includes("next")) {
+      const days = [
+        "sunday",
+        "monday",
+        "tuesday",
+        "wednesday",
+        "thursday",
+        "friday",
+        "saturday",
+      ];
+      for (let i = 0; i < days.length; i++) {
+        if (lowerMessage.includes(`next ${days[i]}`)) {
+          const targetDay = i;
+          const currentDay = today.getDay();
+          let daysToAdd = targetDay - currentDay;
+          if (daysToAdd <= 0) daysToAdd += 7;
+
+          const targetDate = new Date(today);
+          targetDate.setDate(today.getDate() + daysToAdd);
+          return targetDate.toISOString().split("T")[0];
+        }
+      }
+    }
+
     // Check for specific date format (YYYY-MM-DD or MM/DD/YYYY)
     const dateMatch = message.match(
       /(\d{4}-\d{2}-\d{2})|(\d{1,2}\/\d{1,2}\/\d{4})/
     );
     if (dateMatch) {
       return dateMatch[0];
+    }
+
+    // Check for month day patterns (December 23rd, Dec 23, etc.)
+    const monthDayMatch = message.match(
+      /(january|february|march|april|may|june|july|august|september|october|november|december|jan|feb|mar|apr|may|jun|jul|aug|sep|oct|nov|dec)\s+(\d{1,2})(?:st|nd|rd|th)?/i
+    );
+    if (monthDayMatch) {
+      const monthName = monthDayMatch[1].toLowerCase();
+      const day = parseInt(monthDayMatch[2]);
+
+      const monthMap: { [key: string]: number } = {
+        january: 0,
+        jan: 0,
+        february: 1,
+        feb: 1,
+        march: 2,
+        mar: 2,
+        april: 3,
+        apr: 3,
+        may: 4,
+        june: 5,
+        jun: 5,
+        july: 6,
+        jul: 6,
+        august: 7,
+        aug: 7,
+        september: 8,
+        sep: 8,
+        october: 9,
+        oct: 9,
+        november: 10,
+        nov: 10,
+        december: 11,
+        dec: 11,
+      };
+
+      const month = monthMap[monthName];
+      if (month !== undefined) {
+        const year = today.getFullYear();
+        const targetDate = new Date(year, month, day);
+
+        // If the date is in the past, assume next year
+        if (targetDate < today) {
+          targetDate.setFullYear(year + 1);
+        }
+
+        return targetDate.toISOString().split("T")[0];
+      }
     }
 
     // Check for day of week

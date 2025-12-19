@@ -1,0 +1,541 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Chat Widget Test - Metalogics</title>
+    <style>
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          sans-serif;
+        margin: 0;
+        padding: 20px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+      }
+
+      .container {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .header {
+        text-align: center;
+        color: white;
+        margin-bottom: 30px;
+      }
+
+      .header h1 {
+        font-size: 36px;
+        margin: 0 0 10px 0;
+      }
+
+      .chat-container {
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+        overflow: hidden;
+        height: 600px;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .chat-header {
+        background: #667eea;
+        color: white;
+        padding: 20px;
+        text-align: center;
+      }
+
+      .chat-messages {
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+        background: #f8f9fa;
+      }
+
+      .message {
+        margin-bottom: 15px;
+        display: flex;
+        align-items: flex-start;
+      }
+
+      .message.user {
+        justify-content: flex-end;
+      }
+
+      .message.assistant {
+        justify-content: flex-start;
+      }
+
+      .message-bubble {
+        max-width: 70%;
+        padding: 12px 16px;
+        border-radius: 18px;
+        word-wrap: break-word;
+        white-space: pre-wrap;
+      }
+
+      .message.user .message-bubble {
+        background: #667eea;
+        color: white;
+      }
+
+      .message.assistant .message-bubble {
+        background: white;
+        color: #333;
+        border: 1px solid #e0e0e0;
+      }
+
+      .message-time {
+        font-size: 11px;
+        opacity: 0.7;
+        margin-top: 5px;
+      }
+
+      .chat-input {
+        padding: 20px;
+        border-top: 1px solid #e0e0e0;
+        background: white;
+      }
+
+      .input-group {
+        display: flex;
+        gap: 10px;
+      }
+
+      .message-input {
+        flex: 1;
+        padding: 12px 16px;
+        border: 1px solid #ddd;
+        border-radius: 25px;
+        outline: none;
+        font-size: 14px;
+      }
+
+      .message-input:focus {
+        border-color: #667eea;
+      }
+
+      .send-button {
+        background: #667eea;
+        color: white;
+        border: none;
+        padding: 12px 20px;
+        border-radius: 25px;
+        cursor: pointer;
+        font-size: 14px;
+        min-width: 80px;
+      }
+
+      .send-button:hover {
+        background: #5a6fd8;
+      }
+
+      .send-button:disabled {
+        background: #ccc;
+        cursor: not-allowed;
+      }
+
+      .typing-indicator {
+        display: none;
+        padding: 10px 16px;
+        color: #666;
+        font-style: italic;
+      }
+
+      .quick-actions {
+        padding: 15px 20px;
+        background: #f8f9fa;
+        border-top: 1px solid #e0e0e0;
+      }
+
+      .quick-actions h4 {
+        margin: 0 0 10px 0;
+        color: #666;
+        font-size: 12px;
+        text-transform: uppercase;
+      }
+
+      .quick-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+
+      .quick-button {
+        background: white;
+        border: 1px solid #ddd;
+        padding: 8px 12px;
+        border-radius: 15px;
+        cursor: pointer;
+        font-size: 12px;
+        color: #666;
+      }
+
+      .quick-button:hover {
+        background: #667eea;
+        color: white;
+        border-color: #667eea;
+      }
+
+      .status-bar {
+        background: #f8f9fa;
+        padding: 10px 20px;
+        border-top: 1px solid #e0e0e0;
+        font-size: 12px;
+        color: #666;
+        text-align: center;
+      }
+
+      .status-indicator {
+        display: inline-block;
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        margin-right: 5px;
+      }
+
+      .status-indicator.connected {
+        background: #28a745;
+      }
+
+      .status-indicator.disconnected {
+        background: #dc3545;
+      }
+
+      @media (max-width: 768px) {
+        .container {
+          padding: 10px;
+        }
+
+        .chat-container {
+          height: 500px;
+        }
+
+        .message-bubble {
+          max-width: 85%;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <div class="header">
+        <h1>🤖 Metalogics AI Assistant</h1>
+        <p>Test the chat functionality and user responses</p>
+      </div>
+
+      <div class="chat-container">
+        <div class="chat-header">
+          <h3>Chat with our AI Assistant</h3>
+          <p>Ask about our services, book appointments, or get help</p>
+        </div>
+
+        <div class="chat-messages" id="chatMessages">
+          <div class="message assistant">
+            <div class="message-bubble">
+              👋 Hello! I'm the Metalogics AI Assistant. I can help you with: •
+              Information about our services • Checking available appointment
+              times • Booking consultations • Rescheduling or canceling
+              appointments How can I assist you today?
+              <div class="message-time" id="welcomeTime"></div>
+            </div>
+          </div>
+        </div>
+
+        <div class="typing-indicator" id="typingIndicator">
+          🤖 Assistant is typing...
+        </div>
+
+        <div class="quick-actions">
+          <h4>Quick Actions</h4>
+          <div class="quick-buttons">
+            <button
+              class="quick-button"
+              onclick="sendQuickMessage('What services do you offer?')"
+            >
+              Our Services
+            </button>
+            <button
+              class="quick-button"
+              onclick="sendQuickMessage('What times are available this week?')"
+            >
+              Check Availability
+            </button>
+            <button
+              class="quick-button"
+              onclick="sendQuickMessage('I want to book an appointment')"
+            >
+              Book Appointment
+            </button>
+            <button
+              class="quick-button"
+              onclick="sendQuickMessage('I need to reschedule my appointment')"
+            >
+              Reschedule
+            </button>
+            <button
+              class="quick-button"
+              onclick="sendQuickMessage('How can you help me?')"
+            >
+              Get Help
+            </button>
+          </div>
+        </div>
+
+        <div class="chat-input">
+          <div class="input-group">
+            <input
+              type="text"
+              class="message-input"
+              id="messageInput"
+              placeholder="Type your message here..."
+              onkeypress="handleKeyPress(event)"
+            />
+            <button class="send-button" id="sendButton" onclick="sendMessage()">
+              Send
+            </button>
+          </div>
+        </div>
+
+        <div class="status-bar">
+          <span class="status-indicator connected" id="statusIndicator"></span>
+          <span id="statusText">Connected to Metalogics AI</span>
+          <span style="margin-left: 20px"
+            >Session: <span id="sessionId"></span
+          ></span>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // Configuration
+      const API_BASE_URL = "https://latest-chatbot-production.up.railway.app";
+      const API_KEY =
+        "c608cf9ace6a39a48451f2fc67a15e08c00a1f2c287d21ed38ea4c0652fa500d";
+
+      // Generate session ID
+      const sessionId =
+        "chat-" + Math.random().toString(36).substr(2, 9) + "-" + Date.now();
+
+      // DOM elements
+      const chatMessages = document.getElementById("chatMessages");
+      const messageInput = document.getElementById("messageInput");
+      const sendButton = document.getElementById("sendButton");
+      const typingIndicator = document.getElementById("typingIndicator");
+      const statusIndicator = document.getElementById("statusIndicator");
+      const statusText = document.getElementById("statusText");
+
+      // Initialize
+      document.getElementById("sessionId").textContent =
+        sessionId.substring(0, 12) + "...";
+      document.getElementById("welcomeTime").textContent =
+        new Date().toLocaleTimeString();
+
+      // Focus input
+      messageInput.focus();
+
+      /**
+       * Send a message to the chat API
+       */
+      async function sendMessage(message = null) {
+        const messageText = message || messageInput.value.trim();
+
+        if (!messageText) return;
+
+        // Clear input if it was typed
+        if (!message) {
+          messageInput.value = "";
+        }
+
+        // Add user message to chat
+        addMessage("user", messageText);
+
+        // Show typing indicator
+        showTyping(true);
+
+        // Disable send button
+        sendButton.disabled = true;
+        sendButton.textContent = "Sending...";
+
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/chat`, {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              "X-API-Key": API_KEY,
+            },
+            body: JSON.stringify({
+              message: messageText,
+              sessionId: sessionId,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (response.ok && data.success) {
+            // Add assistant response
+            addMessage("assistant", data.response);
+            updateStatus("connected", "Connected to Metalogics AI");
+          } else {
+            // Handle error
+            const errorMsg = data.error || `Server error (${response.status})`;
+            addMessage(
+              "assistant",
+              `❌ Sorry, I encountered an error: ${errorMsg}`
+            );
+            updateStatus("disconnected", "Connection error");
+          }
+        } catch (error) {
+          console.error("Chat error:", error);
+          addMessage(
+            "assistant",
+            "❌ Sorry, I couldn't connect to the server. Please check your internet connection and try again."
+          );
+          updateStatus("disconnected", "Connection failed");
+        } finally {
+          // Hide typing indicator and re-enable send button
+          showTyping(false);
+          sendButton.disabled = false;
+          sendButton.textContent = "Send";
+          messageInput.focus();
+        }
+      }
+
+      /**
+       * Add a message to the chat
+       */
+      function addMessage(sender, text) {
+        const messageDiv = document.createElement("div");
+        messageDiv.className = `message ${sender}`;
+
+        const bubbleDiv = document.createElement("div");
+        bubbleDiv.className = "message-bubble";
+        bubbleDiv.textContent = text;
+
+        const timeDiv = document.createElement("div");
+        timeDiv.className = "message-time";
+        timeDiv.textContent = new Date().toLocaleTimeString();
+
+        bubbleDiv.appendChild(timeDiv);
+        messageDiv.appendChild(bubbleDiv);
+        chatMessages.appendChild(messageDiv);
+
+        // Scroll to bottom
+        chatMessages.scrollTop = chatMessages.scrollHeight;
+      }
+
+      /**
+       * Show/hide typing indicator
+       */
+      function showTyping(show) {
+        typingIndicator.style.display = show ? "block" : "none";
+        if (show) {
+          chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+      }
+
+      /**
+       * Update connection status
+       */
+      function updateStatus(status, text) {
+        statusIndicator.className = `status-indicator ${status}`;
+        statusText.textContent = text;
+      }
+
+      /**
+       * Send a quick message
+       */
+      function sendQuickMessage(message) {
+        sendMessage(message);
+      }
+
+      /**
+       * Handle Enter key press
+       */
+      function handleKeyPress(event) {
+        if (event.key === "Enter" && !event.shiftKey) {
+          event.preventDefault();
+          sendMessage();
+        }
+      }
+
+      /**
+       * Test connection on page load
+       */
+      window.addEventListener("load", async function () {
+        try {
+          const response = await fetch(`${API_BASE_URL}/api/health`);
+          if (response.ok) {
+            updateStatus("connected", "Connected to Metalogics AI");
+          } else {
+            updateStatus("disconnected", "Server unavailable");
+          }
+        } catch (error) {
+          updateStatus("disconnected", "Connection failed");
+        }
+      });
+
+      // Test scenarios for demonstration
+      const testScenarios = [
+        {
+          name: "Service Inquiry",
+          messages: ["What services do you offer?"],
+        },
+        {
+          name: "Availability Check",
+          messages: ["What times are available next week?"],
+        },
+        {
+          name: "Booking Flow",
+          messages: [
+            "I want to book an appointment",
+            "John Smith",
+            "john.smith@example.com",
+            "December 23rd at 2 PM",
+          ],
+        },
+        {
+          name: "Reschedule Request",
+          messages: [
+            "I need to reschedule my appointment for john.smith@example.com",
+          ],
+        },
+      ];
+
+      // Add test scenario buttons (for development)
+      if (window.location.search.includes("debug=true")) {
+        const debugDiv = document.createElement("div");
+        debugDiv.style.cssText =
+          "position: fixed; top: 10px; right: 10px; background: white; padding: 10px; border-radius: 5px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); z-index: 1000;";
+        debugDiv.innerHTML =
+          "<h4>Test Scenarios</h4>" +
+          testScenarios
+            .map(
+              (scenario, i) =>
+                `<button onclick="runTestScenario(${i})" style="display: block; margin: 5px 0; padding: 5px 10px;">${scenario.name}</button>`
+            )
+            .join("");
+        document.body.appendChild(debugDiv);
+      }
+
+      function runTestScenario(index) {
+        const scenario = testScenarios[index];
+        let messageIndex = 0;
+
+        function sendNextMessage() {
+          if (messageIndex < scenario.messages.length) {
+            setTimeout(() => {
+              sendMessage(scenario.messages[messageIndex]);
+              messageIndex++;
+              setTimeout(sendNextMessage, 3000); // Wait 3 seconds between messages
+            }, 1000);
+          }
+        }
+
+        sendNextMessage();
+      }
+    </script>
+  </body>
+</html>
